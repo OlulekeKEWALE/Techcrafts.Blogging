@@ -1,0 +1,63 @@
+@using Techcrafts.Blogging.Application.Features.Posts.Commands
+@model CreatePostCommand
+@{ Layout = "_AdminLayout"; ViewData["Title"] = "Draft New Post"; }
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card p-4 border-0">
+            <form method="post" action="/admin/create">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="AuthorId" value="@Guid.NewGuid()" />
+                
+                <div class="mb-4">
+                    <label class="form-label text-muted small fw-bold text-uppercase">Title</label>
+                    <input type="text" name="Title" class="form-control form-control-lg fw-bold" placeholder="Give it a catchy title..." required />
+                </div>
+                
+                <div class="mb-4">
+                    <label class="form-label text-muted small fw-bold text-uppercase">Summary</label>
+                    <textarea name="Summary" class="form-control bg-surface" rows="2" placeholder="A short description for the meta tags and feed..." required></textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label text-muted small fw-bold text-uppercase">Featured Image URL (Optional)</label>
+                    <input type="text" name="FeaturedImageUrl" class="form-control bg-surface" placeholder="e.g. /images/header1.jpg or https://..." />
+                </div>
+                
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <label class="form-label text-muted small fw-bold text-uppercase mb-0">Content (Markdown)</label>
+                        <button type="button" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1">
+                            <i class="bi bi-magic"></i> Generate with AI
+                        </button>
+                    </div>
+                    <textarea id="markdown-editor" name="Content" class="form-control font-monospace" style="background-color: var(--code-bg); color: var(--code-text);" rows="14" placeholder="Write your content here... supports Markdown and code formatting!" required></textarea>
+                </div>
+                
+                <div class="d-flex justify-content-end gap-3 mt-4 pt-3 border-top border-subtle">
+                    <a href="/admin" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Save & Publish</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card p-4 border-0 mb-4" style="background-color: var(--bg-surface);">
+            <h6 class="fw-bold mb-3"><i class="bi bi-gear-fill me-2 text-muted"></i> Publish Settings</h6>
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="flexCheckDefault" checked>
+                <label class="form-check-label text-muted" for="flexCheckDefault">
+                    Publish immediately
+                </label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="flexCheckChecked">
+                <label class="form-check-label text-muted" for="flexCheckChecked">
+                    Send to Newsletter subscribers
+                </label>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,32 @@
+@* @model dynamic *@
+<div class="d-flex align-items-center justify-content-between p-3 rounded border border-subtle bg-surface mb-5 shadow-sm">
+    <div class="d-flex align-items-center gap-3">
+        <form id="form-clap" class="m-0">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="postId" value="@Model?.PostId" />
+            <button type="submit" class="btn btn-sm btn-light border-subtle rounded-pill px-3 py-2 d-flex align-items-center gap-2 btn-clap shadow-sm bg-card">
+                <i class="bi bi-hands-thumbs-up text-primary"></i> 
+                <span class="fw-bold clap-count">@Model?.Claps</span>
+            </button>
+        </form>
+        <form id="form-bookmark" class="m-0">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="postId" value="@Model?.PostId" />
+            <button type="submit" class="btn btn-sm btn-light border-subtle rounded-circle p-2 shadow-sm bg-card" style="width:38px;height:38px;" title="Bookmark">
+                @if (Model != null && Model.IsBookmarked)
+                {
+                    <i class="bi bi-bookmark-fill text-accent"></i>
+                }
+                else
+                {
+                    <i class="bi bi-bookmark text-muted"></i>
+                }
+            </button>
+        </form>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-sm btn-link text-muted text-decoration-none"><i class="bi bi-twitter-x"></i></button>
+        <button class="btn btn-sm btn-link text-muted text-decoration-none"><i class="bi bi-linkedin"></i></button>
+        <button class="btn btn-sm btn-link text-muted text-decoration-none"><i class="bi bi-link-45deg fs-5"></i></button>
+    </div>
+</div>

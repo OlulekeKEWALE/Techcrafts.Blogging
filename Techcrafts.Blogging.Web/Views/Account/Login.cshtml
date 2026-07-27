@@ -1,0 +1,85 @@
+@{
+    ViewData["Title"] = "Sign In";
+}
+
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 70vh;">
+    <div class="card border-0 shadow-sm p-5" style="max-width: 400px; width: 100%; border-radius: 16px;">
+        <div class="text-center mb-4">
+            <h3 class="fw-bold mb-1">Welcome Back</h3>
+            <p class="text-muted small">Sign in to access your dashboard</p>
+        </div>
+
+        <form method="post" action="/account/external-login">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
+            <button type="submit" name="provider" value="Google" class="btn btn-outline-secondary w-100 mb-3 rounded-pill fw-medium d-flex align-items-center justify-content-center gap-2">
+                <i class="bi bi-google text-danger"></i> Continue with Google
+            </button>
+            <button type="submit" name="provider" value="GitHub" class="btn btn-outline-secondary w-100 mb-4 rounded-pill fw-medium d-flex align-items-center justify-content-center gap-2">
+                <i class="bi bi-github"></i> Continue with GitHub
+            </button>
+        </form>
+
+        <div class="d-flex align-items-center mb-4">
+            <hr class="flex-grow-1 border-subtle">
+            <span class="mx-3 text-muted small fw-medium text-uppercase" style="font-size: 0.75rem;">Or email</span>
+            <hr class="flex-grow-1 border-subtle">
+        </div>
+
+        <form id="email-login-form">
+            @Html.AntiForgeryToken()
+            <div class="mb-3">
+                <label class="form-label small fw-bold text-muted text-uppercase">Email</label>
+                <input type="email" id="login-email" class="form-control rounded-3 bg-light border-0" required placeholder="you@example.com">
+            </div>
+            <div class="mb-4">
+                <label class="form-label small fw-bold text-muted text-uppercase">Password</label>
+                <input type="password" id="login-password" class="form-control rounded-3 bg-light border-0" required placeholder="••••••••">
+            </div>
+            <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold" id="btn-login-submit">
+                Sign In / Sign Up
+            </button>
+            <div id="login-error" class="text-danger small mt-3 text-center d-none"></div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#email-login-form').on('submit', function (e) {
+                e.preventDefault();
+                
+                var $btn = $('#btn-login-submit');
+                var originalText = $btn.text();
+                $btn.prop('disabled', true).text('Processing...');
+                
+                var email = $('#login-email').val();
+                var password = $('#login-password').val();
+                var token = $('input[name="__RequestVerificationToken"]').val();
+                
+                $.ajax({
+                    url: '/account/quick-email-auth',
+                    type: 'POST',
+                    data: {
+                        email: email,
+                        password: password,
+                        __RequestVerificationToken: token
+                    },
+                    success: function (res) {
+                        if (res.success) {
+                            window.location.href = '@(ViewData["ReturnUrl"] ?? "/")';
+                        } else {
+                            $('#login-error').removeClass('d-none').text(res.message);
+                            $btn.prop('disabled', false).text(originalText);
+                        }
+                    },
+                    error: function () {
+                        $('#login-error').removeClass('d-none').text("An error occurred. Please try again.");
+                        $btn.prop('disabled', false).text(originalText);
+                    }
+                });
+            });
+        });
+    </script>
+}

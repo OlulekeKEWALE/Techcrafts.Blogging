@@ -1,0 +1,86 @@
+@model List<string>
+@{
+    ViewData["Title"] = "System Logs";
+    Layout = "_AdminLayout";
+    var logFiles = ViewBag.LogFiles as List<string> ?? new List<string>();
+    var currentFile = ViewBag.CurrentFile as string;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="h3 mb-0">System Logs</h2>
+    <div class="d-flex gap-2">
+        <form method="get" class="d-flex gap-2 align-items-center">
+            <label for="fileSelect" class="form-label mb-0 fw-medium">View Log File:</label>
+            <select id="fileSelect" name="file" class="form-select form-select-sm" onchange="this.form.submit()" style="width: auto;">
+                @if (!logFiles.Any())
+                {
+                    <option>No log files found</option>
+                }
+                @foreach (var file in logFiles)
+                {
+                    if (file == currentFile)
+                    {
+                        <option value="@file" selected>@file</option>
+                    }
+                    else
+                    {
+                        <option value="@file">@file</option>
+                    }
+                }
+            </select>
+        </form>
+        <button class="btn btn-sm btn-outline-secondary" onclick="window.location.reload()"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+    </div>
+</div>
+
+<div class="card border-subtle shadow-sm">
+    <div class="card-header bg-surface border-bottom border-subtle d-flex justify-content-between align-items-center py-3">
+        <span class="fw-bold">
+            <i class="bi bi-file-earmark-text me-2"></i> 
+            @(currentFile ?? "Log Viewer")
+        </span>
+        <span class="badge bg-secondary">Showing last 1000 lines</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="bg-dark text-light p-3" style="max-height: 70vh; overflow-y: auto; font-family: 'Courier New', Courier, monospace; font-size: 0.85rem; line-height: 1.5;">
+            @if (Model != null && Model.Any())
+            {
+                foreach (var line in Model)
+                {
+                    if (line.Contains("[ERR]"))
+                    {
+                        <div class="text-danger">@line</div>
+                    }
+                    else if (line.Contains("[WRN]"))
+                    {
+                        <div class="text-warning">@line</div>
+                    }
+                    else if (line.Contains("[INF]"))
+                    {
+                        <div class="text-info">@line</div>
+                    }
+                    else
+                    {
+                        <div>@line</div>
+                    }
+                }
+            }
+            else
+            {
+                <div class="text-muted fst-italic text-center py-5">
+                    No log entries found or file is empty.
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+    // Auto-scroll to bottom of logs on load
+    document.addEventListener("DOMContentLoaded", function() {
+        var logContainer = document.querySelector('.bg-dark.text-light');
+        if (logContainer) {
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+    });
+</script>

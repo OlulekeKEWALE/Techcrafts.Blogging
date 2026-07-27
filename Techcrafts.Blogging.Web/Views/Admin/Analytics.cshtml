@@ -1,0 +1,80 @@
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Analytics Dashboard";
+}
+
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="card p-4 border-0" style="background-color: var(--bg-surface);">
+            <div class="d-flex align-items-center gap-3 mb-2">
+                <div class="p-2 rounded bg-primary bg-opacity-10 text-primary">
+                    <i class="bi bi-eye-fill"></i>
+                </div>
+                <h5 class="card-title text-muted fw-medium mb-0 m-0">Total Page Views</h5>
+            </div>
+            <p class="card-text display-5 fw-bold mb-0">@ViewBag.TotalViews</p>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card p-4 border-0" style="background-color: var(--bg-surface);">
+            <div class="d-flex align-items-center gap-3 mb-2">
+                <div class="p-2 rounded bg-success bg-opacity-10 text-success">
+                    <i class="bi bi-hands-thumbs-up-fill"></i>
+                </div>
+                <h5 class="card-title text-muted fw-medium mb-0">Total Claps Received</h5>
+            </div>
+            <p class="card-text display-5 fw-bold mb-0">@ViewBag.TotalClaps</p>
+        </div>
+    </div>
+</div>
+
+<div class="card p-4 border-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="card-title fw-bold mb-0">Traffic Overview</h5>
+        <select class="form-select form-select-sm" style="width:auto;">
+            <option>Last 7 Days</option>
+            <option>Last 30 Days</option>
+        </select>
+    </div>
+    <canvas id="trafficChart" width="400" height="120"></canvas>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Use CSS variables for chart colors to natively support dark/light mode switches
+        const style = getComputedStyle(document.body);
+        const primaryColor = style.getPropertyValue('--brand-primary').trim();
+        const surfaceColor = style.getPropertyValue('--bg-surface').trim();
+        const textColor = style.getPropertyValue('--text-muted').trim();
+        
+        var ctx = document.getElementById('trafficChart').getContext('2d');
+        var trafficChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: @Html.Raw(ViewBag.Labels),
+                datasets: [{
+                    label: 'Page Views',
+                    data: @Html.Raw(ViewBag.ViewData),
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    borderColor: primaryColor,
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true,
+                    pointBackgroundColor: primaryColor,
+                    pointBorderColor: '#fff',
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false, drawBorder: false }, ticks: { color: textColor } },
+                    y: { grid: { color: surfaceColor, drawBorder: false }, ticks: { color: textColor, beginAtZero: true } }
+                }
+            }
+        });
+    </script>
+}

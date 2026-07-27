@@ -1,0 +1,30 @@
+<!-- Email Auth Modal -->
+<div class="modal fade" id="emailAuthModal" tabindex="-1" aria-labelledby="emailAuthModalLabel" aria-hidden="true" data-bs-theme="dark">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-subtle bg-main">
+            <div class="modal-header border-subtle">
+                <h5 class="modal-title fw-bold" id="emailAuthModalLabel">Sign In or Register</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div id="quick-auth-error" class="alert alert-danger d-none py-2 small fw-medium" role="alert"></div>
+                <form id="quick-email-auth-form">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-bold text-uppercase">Email address</label>
+                        <input type="email" name="email" class="form-control bg-surface" required placeholder="name@example.com">
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label text-muted small fw-bold text-uppercase">Password</label>
+                        <input type="password" name="password" class="form-control bg-surface" required placeholder="••••••••">
+                        <div class="form-text text-muted small mt-2">If you don't have an account, we'll create one for you automatically.</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 fw-bold d-flex align-items-center justify-content-center gap-2">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        Continue
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

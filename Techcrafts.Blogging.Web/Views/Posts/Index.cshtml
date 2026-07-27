@@ -1,0 +1,114 @@
+@model Techcrafts.Blogging.Application.Features.Posts.Queries.PaginatedPostListDto
+@{ ViewData["Title"] = "Engineering Blog"; }
+
+<div class="d-flex flex-column gap-5">
+    <div class="pb-3 border-bottom border-subtle mb-5">
+        <h1 class="display-5 fw-bold mb-3">Changelog & Publications</h1>
+        <p class="text-muted fs-5 mb-0">Deep dives into .NET architecture, clean code, and platform engineering. Delivered fresh.</p>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 pe-lg-5">
+            <div id="post-list-container" class="d-flex flex-column gap-4">
+                @if (Model != null && Model.Posts != null && Model.Posts.Any())
+                {
+                    @await Html.PartialAsync("_PostListPartial", Model.Posts)
+                }
+                else
+                {
+                    <div class="card p-5 text-center text-muted">
+                        <i class="bi bi-inbox fs-1 mb-3"></i>
+                        <p>No publications available yet.</p>
+                        <a href="/admin/create" class="btn btn-primary mt-3 mx-auto" style="width:fit-content;">Draft a Post</a>
+                    </div>
+                }
+            </div>
+            
+            @if (Model != null && Model.CurrentPage < Model.TotalPages)
+            {
+                <div id="infinite-scroll-trigger" class="py-5 text-center" data-current-page="@Model.CurrentPage" data-total-pages="@Model.TotalPages">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="col-lg-4 mt-5 mt-lg-0">
+            <div class="position-sticky" style="top: 2rem;">
+                <div class="card border-subtle p-4 bg-surface rounded-4">
+                    <h6 class="fw-bold mb-3 text-uppercase small text-muted">Explore Topics</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        @if (Model != null && Model.AllTags != null && Model.AllTags.Any())
+                        {
+                            foreach (var tag in Model.AllTags)
+                            {
+                                <a href="/posts?tag=@tag.Slug" class="badge bg-light text-dark border text-decoration-none px-3 py-2 rounded-pill hover-lift">
+                                    @tag.Name <span class="ms-1 text-muted">@tag.PostCount</span>
+                                </a>
+                            }
+                        }
+                        else
+                        {
+                            <span class="text-muted small">No topics found.</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            var $trigger = $('#infinite-scroll-trigger');
+            if ($trigger.length === 0) return;
+
+            var isLoading = false;
+            
+            var observer = new IntersectionObserver(function (entries) {
+                if (entries[0].isIntersecting && !isLoading) {
+                    loadNextPage();
+                }
+            }, { rootMargin: "200px" });
+
+            observer.observe($trigger[0]);
+
+            function loadNextPage() {
+                var currentPage = parseInt($trigger.attr('data-current-page'));
+                var totalPages = parseInt($trigger.attr('data-total-pages'));
+
+                if (currentPage >= totalPages) {
+                    $trigger.remove();
+                    return;
+                }
+
+                isLoading = true;
+                var nextPage = currentPage + 1;
+
+                $.ajax({
+                    url: '/?page=' + nextPage,
+                    type: 'GET',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    success: function (html) {
+                        if (html.trim() !== '') {
+                            $('#post-list-container').append(html);
+                            $trigger.attr('data-current-page', nextPage);
+                            if (nextPage >= totalPages) {
+                                $trigger.remove();
+                                observer.disconnect();
+                            }
+                        } else {
+                            $trigger.remove();
+                            observer.disconnect();
+                        }
+                    },
+                    complete: function () {
+                        isLoading = false;
+                    }
+                });
+            }
+        });
+    </script>
+}

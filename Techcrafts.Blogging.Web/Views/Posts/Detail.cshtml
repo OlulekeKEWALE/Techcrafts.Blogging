@@ -1,0 +1,92 @@
+@using Markdig
+@model Techcrafts.Blogging.Application.Features.Posts.Queries.PostDto
+@{ 
+    ViewData["Title"] = Model.Title; 
+}
+
+<div class="row mt-4">
+    <div class="col-lg-8 pe-lg-5">
+        <article class="reading-container mt-0">
+            <div class="mb-5">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="badge bg-surface border text-muted px-2 py-1">Engineering</span>
+                    <span class="text-muted small">&bull;</span>
+                    <span class="text-muted small fw-medium">@(Model.PublishedDate?.ToString("MMM dd, yyyy") ?? "Draft")</span>
+                </div>
+                <h1 class="display-4 fw-bold mb-4" style="letter-spacing: -0.03em;">@Model.Title</h1>
+                <p class="lead text-muted mb-4">@Model.Summary</p>
+                <div class="d-flex align-items-center gap-3">
+                    <img src="~/images/logo.png" class="rounded-circle border" style="width: 40px; height: 40px; object-fit: cover;" alt="Author">
+                    <div class="text-start">
+                        <div class="fw-bold fs-6 lh-sm">Okewale Akintunde</div>
+                        <div class="text-muted small">@Html.Raw($"{Model.ReadingTimeMinutes} min read")</div>
+                    </div>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.FeaturedImageUrl))
+            {
+                <div class="mb-5 rounded-4 overflow-hidden border border-subtle">
+                    <img src="@Model.FeaturedImageUrl" class="w-100 h-auto" alt="Header image for @Model.Title" />
+                </div>
+            }
+
+            <div class="prose fs-5 lh-lg" style="color: var(--text-muted);">
+                @Html.Raw(Markdig.Markdown.ToHtml(Model.Content ?? "", new Markdig.MarkdownPipelineBuilder().UseAdvancedExtensions().Build()))
+                
+                <hr class="my-5 border-subtle">
+                
+                @Html.AntiForgeryToken()
+                @await Html.PartialAsync("_ReactionsAndShareBar", Model)
+                
+                <div class="mt-5">
+                    <h4 class="fw-bold mb-4">Comments</h4>
+                    @await Html.PartialAsync("_CommentTree")
+                </div>
+            </div>
+        </article>
+    </div>
+        
+        <div class="col-lg-4 mt-5 mt-lg-0">
+            <div class="position-sticky" style="top: 2rem;">
+                <div class="card border-subtle p-4 bg-surface rounded-4">
+                    <h6 class="fw-bold mb-3 text-uppercase small text-muted">Topics in this post</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        @if (Model.Tags != null && Model.Tags.Any())
+                        {
+                            foreach (var tag in Model.Tags)
+                            {
+                                <a href="/posts?tag=@tag.Slug" class="badge bg-light text-dark border text-decoration-none px-3 py-2 rounded-pill hover-lift">
+                                    @tag.Name
+                                </a>
+                            }
+                        }
+                        else
+                        {
+                            <span class="text-muted small">No tags provided.</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .reading-container { margin-top: 2rem; margin-bottom: 5rem; }
+    .prose p { margin-bottom: 1.5rem; }
+    .text-main { color: var(--text-main); }
+</style>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="~/js/reactions.js" asp-append-version="true"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            document.querySelectorAll('pre code').forEach((el) => {
+                hljs.highlightElement(el);
+            });
+        });
+    </script>
+}

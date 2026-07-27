@@ -1,0 +1,20 @@
+@model Techcrafts.Blogging.Application.Features.Posts.Queries.PostDto
+
+<!-- Main Root Comment Form -->
+<div id="root-comment-form-container">
+    @await Html.PartialAsync("_CommentForm", Model.Id)
+</div>
+
+<div id="comments-list" class="mt-5">
+    @if (Model.Comments != null && Model.Comments.Any())
+    {
+        foreach (var comment in Model.Comments)
+        {
+            @await Html.PartialAsync("_CommentItem", comment)
+        }
+    }
+    else
+    {
+        <p class="text-muted fst-italic no-comments-msg">Be the first to share your thoughts!</p>
+    }
+</div>

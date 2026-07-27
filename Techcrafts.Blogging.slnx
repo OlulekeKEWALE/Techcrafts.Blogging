@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="Techcrafts.Blogging.Application/Techcrafts.Blogging.Application.csproj" />
+  <Project Path="Techcrafts.Blogging.Domain/Techcrafts.Blogging.Domain.csproj" />
+  <Project Path="Techcrafts.Blogging.Infrastructure/Techcrafts.Blogging.Infrastructure.csproj" />
+  <Project Path="Techcrafts.Blogging.SharedKernel/Techcrafts.Blogging.SharedKernel.csproj" />
+  <Project Path="Techcrafts.Blogging.Web/Techcrafts.Blogging.Web.csproj" />
+</Solution>
