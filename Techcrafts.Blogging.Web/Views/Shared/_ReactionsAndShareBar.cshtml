@@ -1,0 +1,43 @@
+@model Techcrafts.Blogging.Application.Features.Posts.Queries.PostDto
+@{
+    var likes = Model.LikesCount;
+    var dislikes = Model.DislikesCount;
+    var userReaction = Model.UserReaction;
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center py-4 border-top border-bottom border-subtle mb-5">
+    
+    <!-- Reactions -->
+    <div class="d-flex align-items-center gap-3">
+        <button type="button" class="btn btn-outline-secondary rounded-pill d-flex align-items-center gap-2 reaction-btn @(userReaction == 1 ? "active border-primary text-primary" : "")" data-post-id="@Model.Id" data-reaction="1">
+            <i class="bi @(userReaction == 1 ? "bi-hand-thumbs-up-fill" : "bi-hand-thumbs-up")"></i>
+            <span class="fw-medium like-count">@likes</span>
+        </button>
+        
+        <button type="button" class="btn btn-outline-secondary rounded-pill d-flex align-items-center gap-2 reaction-btn @(userReaction == 2 ? "active border-danger text-danger" : "")" data-post-id="@Model.Id" data-reaction="2">
+            <i class="bi @(userReaction == 2 ? "bi-hand-thumbs-down-fill" : "bi-hand-thumbs-down")"></i>
+            <span class="fw-medium dislike-count">@dislikes</span>
+        </button>
+    </div>
+
+    <!-- Share Bar -->
+    <div class="d-flex align-items-center gap-2">
+        <span class="text-muted small fw-bold text-uppercase me-2">Share</span>
+        
+        <a href="https://twitter.com/intent/tweet?text=@Uri.EscapeDataString(Model.Title)&url=@Uri.EscapeDataString("https://example.com/posts/" + Model.Slug)" target="_blank" class="btn btn-light rounded-circle p-2 text-muted" title="Share on X">
+            <i class="bi bi-twitter-x"></i>
+        </a>
+        
+        <a href="https://www.linkedin.com/sharing/share-offsite/?url=@Uri.EscapeDataString("https://example.com/posts/" + Model.Slug)" target="_blank" class="btn btn-light rounded-circle p-2 text-muted" title="Share on LinkedIn">
+            <i class="bi bi-linkedin"></i>
+        </a>
+        
+        <a href="https://www.facebook.com/sharer/sharer.php?u=@Uri.EscapeDataString("https://example.com/posts/" + Model.Slug)" target="_blank" class="btn btn-light rounded-circle p-2 text-muted" title="Share on Facebook">
+            <i class="bi bi-facebook"></i>
+        </a>
+
+        <button type="button" id="btn-copy-share" class="btn btn-light rounded-circle p-2 text-muted" title="Copy Link" data-title="@Model.Title" data-url="https://example.com/posts/@Model.Slug">
+            <i class="bi bi-link-45deg fs-5"></i>
+        </button>
+    </div>
+</div>

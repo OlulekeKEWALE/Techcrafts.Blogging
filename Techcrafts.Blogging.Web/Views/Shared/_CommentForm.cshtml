@@ -1,0 +1,27 @@
+@model Guid
+<form class="comment-form mb-4 p-4 border border-subtle rounded-4 bg-surface shadow-sm" action="/comments/create" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="PostId" value="@Model" />
+    <input type="hidden" name="ParentCommentId" class="parent-comment-id" value="" />
+    
+    <div class="mb-3 d-flex align-items-center gap-3">
+        <div class="flex-grow-1">
+            <input type="text" class="form-control bg-light border-subtle" name="AuthorName" placeholder="Your Name *" required>
+        </div>
+        <div class="flex-grow-1">
+            <input type="email" class="form-control bg-light border-subtle" name="AuthorEmail" placeholder="Email Address *" required>
+        </div>
+    </div>
+    
+    <div class="mb-3">
+        <textarea class="form-control bg-light border-subtle" name="Content" rows="4" placeholder="Join the discussion... *" required></textarea>
+    </div>
+    
+    <div class="d-flex justify-content-between align-items-center">
+        <small class="text-muted">Your email will not be published.</small>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-light btn-cancel-reply d-none">Cancel</button>
+            <button type="submit" class="btn btn-primary px-4 fw-medium">Post Comment</button>
+        </div>
+    </div>
+</form>

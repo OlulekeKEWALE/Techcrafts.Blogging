@@ -1,0 +1,45 @@
+@{ Layout = "_AdminLayout"; }
+
+<h2 class="fw-bold mb-4" style="letter-spacing: -0.02em;">Dashboard</h2>
+
+<div class="row g-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-4 bg-surface p-4 h-100">
+            <h6 class="text-muted text-uppercase fw-bold small mb-2"><i class="bi bi-file-earmark-text me-2"></i>Total Posts</h6>
+            <div class="display-5 fw-bold text-main">@ViewBag.TotalPosts</div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-4 bg-surface p-4 h-100">
+            <h6 class="text-muted text-uppercase fw-bold small mb-2"><i class="bi bi-eye me-2"></i>Total Views</h6>
+            <div class="display-5 fw-bold text-main">@ViewBag.TotalViews</div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-4 bg-surface p-4 h-100">
+            <h6 class="text-muted text-uppercase fw-bold small mb-2"><i class="bi bi-people me-2"></i>Active Users</h6>
+            <div class="display-5 fw-bold text-main">@ViewBag.TotalUsers</div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-4 bg-surface p-4 h-100">
+            <h6 class="text-muted text-uppercase fw-bold small mb-2"><i class="bi bi-hand-thumbs-up me-2"></i>Total Likes</h6>
+            <div class="display-5 fw-bold text-main">@ViewBag.TotalLikes</div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm rounded-4 bg-surface p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="fw-bold m-0">Recent Activity</h5>
+                <a href="/admin/analytics" class="btn btn-sm btn-outline-secondary rounded-pill">View Analytics</a>
+            </div>
+            <p class="text-muted">The system is currently tracking your performance metrics. Head over to the Analytics tab to view your 7-day trailing charts.</p>
+        </div>
+    </div>
+</div>
