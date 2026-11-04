@@ -1,0 +1,100 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+      - 'feature/**'
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Build, Concurrency & Real-Browser Acceptance
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: "Y"
+          MSSQL_SA_PASSWORD: "Password123!"
+        ports:
+          - 1433:1433
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET SDK (10.0.x)
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Display .NET Environment Info
+        run: dotnet --info
+
+      - name: Wait for SQL Server Readiness
+        run: |
+          echo "Waiting for SQL Server 2022 service container on 127.0.0.1:1433..."
+          for i in {1..30}; do
+            if nc -z 127.0.0.1 1433; then
+              echo "SQL Server port 1433 is open and responding."
+              sleep 5
+              exit 0
+            fi
+            echo "Waiting for SQL Server... attempt $i/30"
+            sleep 2
+          done
+          echo "SQL Server failed to become ready within timeout."
+          exit 1
+
+      - name: Restore Dependencies
+        run: dotnet restore Techcrafts.Blogging.slnx
+
+      - name: Build Solution (Release)
+        run: dotnet build Techcrafts.Blogging.slnx -c Release --no-restore
+
+      - name: Install Playwright Chromium Dependencies
+        run: pwsh Techcrafts.Blogging.Tests/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+
+      - name: Run Test Suite (All 40 Tests)
+        env:
+          TEST_CONNECTION_STRING: "Server=127.0.0.1,1433;Database=Techcrafts_Certification_Test;User Id=sa;Password=Password123!;TrustServerCertificate=True;MultipleActiveResultSets=true;"
+          ASPNETCORE_ENVIRONMENT: "Testing"
+        run: |
+          dotnet test Techcrafts.Blogging.Tests/Techcrafts.Blogging.Tests.csproj \
+            -c Release \
+            --no-build \
+            --logger "trx;LogFileName=ci-test-results.trx" \
+            --logger "console;verbosity=normal"
+
+      - name: Upload Test Results (TRX)
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ci-test-results
+          path: "**/ci-test-results.trx"
+          retention-days: 7
+          if-no-files-found: warn
+
+      - name: Upload Playwright Failure Screenshots & Traces
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-artifacts
+          path: artifacts/playwright/
+          retention-days: 7
+          if-no-files-found: ignore
