@@ -3,5 +3,6 @@
   <Project Path="Techcrafts.Blogging.Domain/Techcrafts.Blogging.Domain.csproj" />
   <Project Path="Techcrafts.Blogging.Infrastructure/Techcrafts.Blogging.Infrastructure.csproj" />
   <Project Path="Techcrafts.Blogging.SharedKernel/Techcrafts.Blogging.SharedKernel.csproj" />
+  <Project Path="Techcrafts.Blogging.Tests/Techcrafts.Blogging.Tests.csproj" />
   <Project Path="Techcrafts.Blogging.Web/Techcrafts.Blogging.Web.csproj" />
 </Solution>

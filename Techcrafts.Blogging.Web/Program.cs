@@ -25,19 +25,28 @@ try
     // Setup OpenTelemetry
     builder.Services.AddOpenTelemetry()
         .ConfigureResource(resource => resource.AddService("Techcrafts.Blogging.Web"))
-        .WithTracing(tracing => tracing
-            .AddAspNetCoreInstrumentation()
-            .AddHttpClientInstrumentation()
-            .AddEntityFrameworkCoreInstrumentation()
-            .AddOtlpExporter(opts => 
-            {
-                var endpoint = builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"];
-                if (!string.IsNullOrEmpty(endpoint))
+        .WithTracing(tracing => 
+        {
+            tracing
+                .AddAspNetCoreInstrumentation()
+                .AddHttpClientInstrumentation()
+                .AddEntityFrameworkCoreInstrumentation()
+                .AddOtlpExporter(opts => 
                 {
-                    opts.Endpoint = new Uri(endpoint);
-                }
-            })
-            .AddConsoleExporter())
+                    var endpoint = builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"];
+                    if (!string.IsNullOrEmpty(endpoint))
+                    {
+                        opts.Endpoint = new Uri(endpoint);
+                    }
+                })
+                .AddConsoleExporter();
+
+            if (builder.Configuration.GetValue<bool>("Telemetry:Enabled", true))
+            {
+                tracing.AddProcessor(sp => new OpenTelemetry.BatchActivityExportProcessor(
+                    new Techcrafts.Blogging.Infrastructure.Telemetry.DatabaseTelemetryExporter(sp)));
+            }
+        })
         .WithMetrics(metrics => metrics
             .AddAspNetCoreInstrumentation()
             .AddHttpClientInstrumentation()
@@ -94,8 +103,6 @@ builder.Services.AddMediatR(cfg => {
 });
 
 // Setup Infrastructure (DbContext, Services)
-// We will mock the connection string for now
-builder.Configuration["ConnectionStrings:DefaultConnection"] = "Server=(localdb)\\mssqllocaldb;Database=BloggingDb;Trusted_Connection=True;MultipleActiveResultSets=true";
 
 // Add AnalyticsBufferService as a Background HostedService
 builder.Services.AddSingleton<Techcrafts.Blogging.Infrastructure.Services.AnalyticsBufferService>();
@@ -109,12 +116,8 @@ builder.Services.AddHybridCache();
 
 var app = builder.Build();
 
-// Seed Database
-using (var scope = app.Services.CreateScope())
-{
-    var context = scope.ServiceProvider.GetRequiredService<Techcrafts.Blogging.Infrastructure.Persistence.BloggingDbContext>();
-    await Techcrafts.Blogging.Infrastructure.Persistence.DbSeeder.SeedAsync(context);
-}
+// Add the setup middleware early in the pipeline to intercept requests if not configured
+app.UseMiddleware<Techcrafts.Blogging.Web.Middlewares.SetupMiddleware>();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

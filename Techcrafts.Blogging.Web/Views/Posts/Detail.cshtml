@@ -2,7 +2,56 @@
 @model Techcrafts.Blogging.Application.Features.Posts.Queries.PostDto
 @{ 
     ViewData["Title"] = Model.Title; 
+    ViewData["MetaDescription"] = Model.Summary;
+    ViewData["OgType"] = "article";
+    
+    if (!string.IsNullOrEmpty(Model.FeaturedImageUrl))
+    {
+        ViewData["OgImage"] = Model.FeaturedImageUrl;
+    }
+    
+    if (Model.Tags != null && Model.Tags.Any())
+    {
+        ViewData["ArticleTags"] = Model.Tags.Select(t => t.Name).ToArray();
+        ViewData["MetaKeywords"] = string.Join(", ", Model.Tags.Select(t => t.Name));
+    }
+
+    var scheme = Context.Request.Scheme;
+    var host = Context.Request.Host.Value;
+    var currentUrl = $"{scheme}://{host}{Context.Request.Path}";
+    var imageUrl = string.IsNullOrEmpty(Model.FeaturedImageUrl) ? $"{scheme}://{host}/images/logo.png" : Model.FeaturedImageUrl;
+    if (!imageUrl.StartsWith("http")) imageUrl = $"{scheme}://{host}{imageUrl}";
 }
+
+<!-- Structured Data (JSON-LD) for Search Engines -->
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@@type": "WebPage",
+    "@@id": "@currentUrl"
+  },
+  "headline": "@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Title).Trim('"'))",
+  "description": "@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Summary).Trim('"'))",
+  "image": "@imageUrl",  
+  "author": {
+    "@@type": "Person",
+    "name": "Oluleke Okewale",
+    "url": "@(scheme)://@(host)/Home/About"
+  },  
+  "publisher": {
+    "@@type": "Organization",
+    "name": "Techcrafts Blogging",
+    "logo": {
+      "@@type": "ImageObject",
+      "url": "@(scheme)://@(host)/images/logo.png"
+    }
+  },
+  "datePublished": "@(Model.PublishedDate?.ToString("yyyy-MM-ddTHH:mm:ssZ") ?? DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"))",
+  "dateModified": "@(Model.PublishedDate?.ToString("yyyy-MM-ddTHH:mm:ssZ") ?? DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"))"
+}
+</script>
 
 <div class="row mt-4">
     <div class="col-lg-8 pe-lg-5">
@@ -32,7 +81,7 @@
             }
 
             <div class="prose fs-5 lh-lg" style="color: var(--text-muted);">
-                @Html.Raw(Markdig.Markdown.ToHtml(Model.Content ?? "", new Markdig.MarkdownPipelineBuilder().UseAdvancedExtensions().Build()))
+                @Html.Raw(Techcrafts.Blogging.Application.Common.Utils.MarkdownRenderer.RenderToSafeHtml(Model.Content))
                 
                 <hr class="my-5 border-subtle">
                 

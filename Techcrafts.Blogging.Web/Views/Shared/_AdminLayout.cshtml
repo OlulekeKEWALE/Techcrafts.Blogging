@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard - Techcrafts</title>
+    <title>@ViewData["Title"] - Techcrafts Admin</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="~/css/theme.css" asp-append-version="true" />
@@ -20,15 +20,29 @@
 </head>
 <body>
     <aside class="sidebar">
-        <a href="/" class="sidebar-brand text-decoration-none mb-5">
+        <a href="/" class="sidebar-brand text-decoration-none mb-4">
             <img src="~/images/logo.png" alt="Techcrafts Logo" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-subtle);" />
             Techcrafts
         </a>
         <nav class="nav flex-column">
-            <a class="nav-link" href="/admin"><i class="bi bi-grid-1x2"></i> Overview</a>
-            <a class="nav-link" href="/admin/create"><i class="bi bi-pencil-square"></i> Draft Post</a>
-            <a class="nav-link" href="/admin/analytics"><i class="bi bi-bar-chart-line"></i> Analytics</a>
-            <a class="nav-link" href="/admin/logs"><i class="bi bi-terminal"></i> System Logs</a>
+            @{
+                var currentPath = Context.Request.Path.Value?.ToLower() ?? "";
+            }
+            <a class="nav-link @(currentPath == "/admin" ? "active" : "")" href="/admin">
+                <i class="bi bi-grid-1x2"></i> Overview
+            </a>
+            <a class="nav-link @(currentPath.StartsWith("/admin/posts") ? "active" : "")" href="/admin/posts">
+                <i class="bi bi-journal-text"></i> Blog Posts
+            </a>
+            <a class="nav-link @(currentPath == "/admin/create" ? "active" : "")" href="/admin/create">
+                <i class="bi bi-pencil-square"></i> Draft Post
+            </a>
+            <a class="nav-link @(currentPath == "/admin/analytics" ? "active" : "")" href="/admin/analytics">
+                <i class="bi bi-bar-chart-line"></i> Analytics
+            </a>
+            <a class="nav-link @(currentPath == "/admin/logs" ? "active" : "")" href="/admin/logs">
+                <i class="bi bi-terminal"></i> System Logs
+            </a>
         </nav>
         <div class="mt-auto text-muted small">
             &copy; 2026 Admin System
@@ -37,10 +51,12 @@
 
     <div class="main-content">
         <header class="page-header">
-            <h3 class="mb-0 fw-bold">@ViewData["Title"]</h3>
-            <div class="d-flex gap-3">
-                <a href="/" class="btn btn-sm btn-secondary">View Site</a>
-                <button class="btn btn-sm btn-primary">Profile</button>
+            <h4 class="mb-0 fw-bold">@ViewData["Title"]</h4>
+            <div class="d-flex gap-3 align-items-center">
+                <a href="/" class="btn btn-sm btn-secondary" target="_blank">
+                    <i class="bi bi-box-arrow-up-right me-1"></i> View Site
+                </a>
+                <span class="text-muted small">@User.Identity?.Name</span>
             </div>
         </header>
         <main role="main">

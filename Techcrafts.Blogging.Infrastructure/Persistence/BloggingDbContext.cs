@@ -30,6 +30,7 @@ public class BloggingDbContext : IdentityDbContext<IdentityUser>, IBloggingDbCon
     public DbSet<Advertisement> Advertisements => Set<Advertisement>();
     public DbSet<Sponsorship> Sponsorships => Set<Sponsorship>();
     public DbSet<SiteSetting> SiteSettings => Set<SiteSetting>();
+    public DbSet<TelemetryLog> TelemetryLogs => Set<TelemetryLog>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

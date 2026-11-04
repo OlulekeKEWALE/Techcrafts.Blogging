@@ -1,7 +1,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Techcrafts.Blogging.Application.Interfaces;
-using Techcrafts.Blogging.Application.Features.Posts.Queries;
+using Techcrafts.Blogging.Domain.Enums;
 
 namespace Techcrafts.Blogging.Application.Features.Posts.Queries;
 
@@ -16,11 +16,18 @@ public class GetPostBySlugQueryHandler : IRequestHandler<GetPostBySlugQuery, Pos
 
     public async Task<PostDto?> Handle(GetPostBySlugQuery request, CancellationToken cancellationToken)
     {
-        var post = await _context.Posts
+        var query = _context.Posts
             .Include(p => p.PostTags)
                 .ThenInclude(pt => pt.Tag)
-            .AsNoTracking()
-            .FirstOrDefaultAsync(p => p.Slug == request.Slug, cancellationToken);
+            .AsNoTracking();
+
+        // Enforce publication check for public detail reads unless specifically requested by authorized preview
+        if (!request.AllowDraft)
+        {
+            query = query.Where(p => p.Status == PostStatus.Published);
+        }
+
+        var post = await query.FirstOrDefaultAsync(p => p.Slug == request.Slug, cancellationToken);
 
         if (post == null)
             return null;
@@ -79,20 +86,12 @@ public class GetPostBySlugQueryHandler : IRequestHandler<GetPostBySlugQuery, Pos
             Status = c.Status.ToString()
         }).ToList();
 
-        // Build the tree
-        var rootComments = dtos.Where(c => c.ParentCommentId == null).ToList();
-        foreach (var c in dtos)
+        var lookup = dtos.ToLookup(c => c.ParentCommentId);
+        foreach (var comment in dtos)
         {
-            if (c.ParentCommentId != null)
-            {
-                var parent = dtos.FirstOrDefault(p => p.Id == c.ParentCommentId);
-                if (parent != null)
-                {
-                    parent.Replies.Add(c);
-                }
-            }
+            comment.Replies = lookup[comment.Id].ToList();
         }
 
-        return rootComments;
+        return lookup[null].ToList();
     }
 }

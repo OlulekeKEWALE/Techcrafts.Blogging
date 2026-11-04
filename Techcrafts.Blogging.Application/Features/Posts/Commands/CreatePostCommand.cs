@@ -9,5 +9,6 @@ public record CreatePostCommand(
     string Content,
     string? FeaturedImageUrl,
     Guid AuthorId,
-    List<Guid> TagIds,
-    Guid CategoryId) : IRequest<Guid>;
+    List<Guid>? TagIds = null,
+    Guid? CategoryId = null,
+    bool Publish = false) : IRequest<Guid>;

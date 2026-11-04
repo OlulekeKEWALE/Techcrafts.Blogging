@@ -20,6 +20,7 @@ public class Post : Entity, IAuditableEntity
     public int ViewCount { get; set; }
     public int ReadingTimeMinutes { get; set; }
     public bool IsFeatured { get; set; }
+    public byte[]? RowVersion { get; set; }
 
     public Author? Author { get; set; }
     public ICollection<PostTag> PostTags { get; set; } = new List<PostTag>();
