@@ -1,0 +1,71 @@
+@model IEnumerable<Techcrafts.Blogging.Domain.Entities.TelemetryLog>
+@{
+    ViewData["Title"] = "Telemetry Dashboard";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0">Telemetry Dashboard</h2>
+        <span class="badge bg-primary fs-6">Latest 100 Traces</span>
+    </div>
+
+    <div class="card bg-surface border-subtle shadow-sm rounded-4">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-borderless align-middle mb-0">
+                    <thead class="bg-light border-bottom border-subtle text-muted small text-uppercase">
+                        <tr>
+                            <th class="ps-4 py-3">Timestamp</th>
+                            <th class="py-3">Method</th>
+                            <th class="py-3">Path</th>
+                            <th class="py-3">Duration (ms)</th>
+                            <th class="py-3">Status Code</th>
+                            <th class="pe-4 py-3">Trace ID</th>
+                        </tr>
+                    </thead>
+                    <tbody class="border-top-0">
+                        @foreach (var log in Model)
+                        {
+                            var rowClass = log.HttpStatusCode >= 400 ? "table-danger" : "";
+                            var statusBadge = log.HttpStatusCode switch
+                            {
+                                >= 500 => "bg-danger",
+                                >= 400 => "bg-warning text-dark",
+                                >= 200 => "bg-success",
+                                _ => "bg-secondary"
+                            };
+
+                            <tr class="@rowClass">
+                                <td class="ps-4 py-3 text-muted small">@log.Timestamp.ToLocalTime().ToString("MMM dd, HH:mm:ss")</td>
+                                <td class="py-3 fw-bold">@log.HttpMethod</td>
+                                <td class="py-3 font-monospace small">@log.HttpPath</td>
+                                <td class="py-3">
+                                    <span class="fw-medium">@log.DurationMs.ToString("0.00")</span>
+                                </td>
+                                <td class="py-3">
+                                    <span class="badge @statusBadge px-2 py-1">@log.HttpStatusCode</span>
+                                    @if(!string.IsNullOrEmpty(log.ErrorMessage)) 
+                                    {
+                                        <div class="text-danger small mt-1">@log.ErrorMessage</div>
+                                    }
+                                </td>
+                                <td class="pe-4 py-3 font-monospace small text-muted">
+                                    @(log.TraceId.Length > 8 ? log.TraceId.Substring(0, 8) + "..." : log.TraceId)
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            
+            @if (!Model.Any())
+            {
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-activity display-4 mb-3 d-block"></i>
+                    <h5>No Telemetry Data</h5>
+                    <p>Make some requests to the application to generate telemetry.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>

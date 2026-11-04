@@ -1,0 +1,179 @@
+@using Techcrafts.Blogging.Application.Features.Posts.Queries
+@using Techcrafts.Blogging.Domain.Entities
+@using Techcrafts.Blogging.Domain.Enums
+@model AdminPostDetailDto
+
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = $"Edit Post — {Model.Title}";
+    var allTags = (List<Tag>?)ViewBag.AllTags ?? new List<Tag>();
+}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <a href="/admin/posts" class="text-muted text-decoration-none small d-inline-flex align-items-center gap-1 mb-2">
+            <i class="bi bi-arrow-left"></i> Back to Blog Posts
+        </a>
+        <h2 class="fw-bold m-0" style="letter-spacing: -0.02em;">Edit Post</h2>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <span class="badge @(Model.Status == PostStatus.Published ? "bg-success-subtle text-success border border-success-subtle" : "bg-secondary-subtle text-light border border-secondary-subtle") px-3 py-2">
+            Status: @Model.Status
+        </span>
+        @if (Model.Status == PostStatus.Published)
+        {
+            <a href="/posts/@Model.Slug" target="_blank" class="btn btn-outline-info btn-sm d-flex align-items-center gap-1">
+                <i class="bi bi-box-arrow-up-right"></i> View Live
+            </a>
+        }
+    </div>
+</div>
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger border-0 shadow-sm mb-4">
+        <div class="fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill me-2"></i> Please correct the following errors:</div>
+        <div asp-validation-summary="All" class="text-white small m-0"></div>
+    </div>
+}
+
+<form method="post" action="/admin/posts/@Model.Id/edit">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="rowVersion" value="@Model.RowVersion" />
+    <div class="row g-4">
+        <!-- Editor Left Column -->
+        <div class="col-lg-8">
+            <div class="card p-4 border-0 shadow-sm rounded-4 bg-surface mb-4">
+                <div class="mb-4">
+                    <label class="form-label text-muted small fw-bold text-uppercase">Title</label>
+                    <input type="text" name="title" value="@Model.Title" class="form-control form-control-lg fw-bold" placeholder="Give it a catchy title..." required />
+                </div>
+                
+                <div class="mb-4">
+                    <label class="form-label text-muted small fw-bold text-uppercase">Summary</label>
+                    <textarea name="summary" class="form-control" rows="3" placeholder="A short description for meta tags and feed..." required>@Model.Summary</textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label text-muted small fw-bold text-uppercase">Featured Image URL (Optional)</label>
+                    <input type="text" name="featuredImageUrl" value="@Model.FeaturedImageUrl" class="form-control" placeholder="e.g. /images/header1.jpg or https://..." />
+                </div>
+                
+                <div class="mb-4">
+                    <label class="form-label text-muted small fw-bold text-uppercase mb-2">Content (Markdown)</label>
+                    <textarea id="markdown-editor" name="content" class="form-control font-monospace" rows="16" placeholder="Write your content here...">@Model.Content</textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Meta / Publishing Sidebar Right Column -->
+        <div class="col-lg-4">
+            <div class="card p-4 border-0 shadow-sm rounded-4 bg-surface mb-4">
+                <h6 class="fw-bold mb-3"><i class="bi bi-send me-2 text-muted"></i> Editorial Actions</h6>
+                
+                <div class="d-grid gap-2">
+                    <button type="submit" name="action" value="save" class="btn btn-primary">
+                        <i class="bi bi-check-lg me-1"></i> Save Changes
+                    </button>
+                    
+                    @if (Model.Status == PostStatus.Published)
+                    {
+                        <button type="submit" name="action" value="unpublish" class="btn btn-outline-warning">
+                            <i class="bi bi-eye-slash me-1"></i> Unpublish to Drafts
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="submit" name="action" value="publish" class="btn btn-success">
+                            <i class="bi bi-cloud-upload me-1"></i> Save & Publish
+                        </button>
+                    }
+
+                    <a href="/admin/posts/@Model.Id/preview" class="btn btn-outline-secondary">
+                        <i class="bi bi-eye me-1"></i> Safe Admin Preview
+                    </a>
+                </div>
+            </div>
+
+            <div class="card p-4 border-0 shadow-sm rounded-4 bg-surface mb-4">
+                <h6 class="fw-bold mb-3"><i class="bi bi-sliders me-2 text-muted"></i> Post Metadata</h6>
+                
+                <div class="mb-3">
+                    <label class="form-label text-muted small fw-bold text-uppercase">Slug (URL)</label>
+                    <input type="text" class="form-control font-monospace text-muted" value="@Model.Slug" readonly disabled />
+                    <div class="form-text small">Slugs are canonical to prevent broken inbound links.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-muted small fw-bold text-uppercase">Author</label>
+                    <input type="text" class="form-control text-muted" value="@Model.AuthorName" readonly disabled />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-muted small fw-bold text-uppercase">Reading Time</label>
+                    <input type="text" class="form-control text-muted" value="@Model.ReadingTimeMinutes min read" readonly disabled />
+                </div>
+
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" name="isFeatured" id="isFeatured" value="true" @(Model.IsFeatured ? "checked" : "") />
+                    <input type="hidden" name="isFeatured" value="false" />
+                    <label class="form-check-label text-light" for="isFeatured">
+                        Feature this post prominently
+                    </label>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-muted small fw-bold text-uppercase mb-2">Tags</label>
+                    @if (allTags.Any())
+                    {
+                        <div class="d-flex flex-wrap gap-2">
+                            @foreach (var tag in allTags)
+                            {
+                                var isChecked = Model.TagIds.Contains(tag.Id);
+                                <div class="form-check form-check-inline m-0">
+                                    <input class="form-check-input" type="checkbox" name="tagIds" value="@tag.Id" id="tag_@tag.Id" @(isChecked ? "checked" : "") />
+                                    <label class="form-check-label small" for="tag_@tag.Id">@tag.Name</label>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-muted small">No tags defined yet.</div>
+                    }
+                </div>
+            </div>
+
+            <div class="card p-4 border-0 shadow-sm rounded-4 bg-surface">
+                <h6 class="fw-bold mb-2 text-muted small text-uppercase">Audit Details</h6>
+                <div class="small text-muted mb-1"><strong>Created:</strong> @Model.CreatedDate.ToString("yyyy-MM-dd HH:mm UTC")</div>
+                <div class="small text-muted mb-1"><strong>Updated:</strong> @(Model.UpdatedDate?.ToString("yyyy-MM-dd HH:mm UTC") ?? "Never")</div>
+                <div class="small text-muted mb-1"><strong>Published:</strong> @(Model.PublishedDate?.ToString("yyyy-MM-dd HH:mm UTC") ?? "Not published")</div>
+                <div class="small text-muted"><strong>Total Views:</strong> @Model.ViewCount</div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const editorEl = document.getElementById("markdown-editor");
+            if (editorEl) {
+                const easyMDE = new EasyMDE({
+                    element: editorEl,
+                    spellChecker: false,
+                    autosave: { enabled: false },
+                    status: ["lines", "words", "cursor"]
+                });
+                editorEl.easyMDE = easyMDE;
+                easyMDE.codemirror.on("change", function () {
+                    editorEl.value = easyMDE.value();
+                });
+            }
+        });
+    </script>
+}

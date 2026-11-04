@@ -3,7 +3,34 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Techcrafts</title>
+    <!-- Standard SEO -->
+    <title>@(ViewData["Title"] != null ? ViewData["Title"] + " - Oluleke OKEWALE" : "Oluleke OKEWALE - Software Engineer")</title>
+    <meta name="description" content="@(ViewData["MetaDescription"] ?? "Thoughts, tutorials, and insights on software engineering and technology by Oluleke OKEWALE.")" />
+    <meta name="keywords" content="@(ViewData["MetaKeywords"] ?? "software engineering, .net, programming, web development")" />
+    <meta name="author" content="Oluleke OKEWALE" />
+    <link rel="canonical" href="@(ViewData["CanonicalUrl"] ?? Context.Request.Scheme + "://" + Context.Request.Host + Context.Request.Path)" />
+
+    <!-- Open Graph (Social Sharing) -->
+    <meta property="og:title" content="@(ViewData["Title"] ?? "Oluleke OKEWALE")" />
+    <meta property="og:description" content="@(ViewData["MetaDescription"] ?? "Insights on software engineering.")" />
+    <meta property="og:type" content="@(ViewData["OgType"] ?? "website")" />
+    <meta property="og:url" content="@(ViewData["CanonicalUrl"] ?? Context.Request.Scheme + "://" + Context.Request.Host + Context.Request.Path)" />
+    <meta property="og:image" content="@(ViewData["OgImage"] ?? Context.Request.Scheme + "://" + Context.Request.Host + "/images/logo.png")" />
+    <meta property="og:site_name" content="Techcrafts Blogging" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="@(ViewData["Title"] ?? "Oluleke OKEWALE")" />
+    <meta name="twitter:description" content="@(ViewData["MetaDescription"] ?? "Insights on software engineering.")" />
+    <meta name="twitter:image" content="@(ViewData["OgImage"] ?? Context.Request.Scheme + "://" + Context.Request.Host + "/images/logo.png")" />
+
+    @if (ViewData["ArticleTags"] is string[] articleTags)
+    {
+        foreach (var tag in articleTags)
+        {
+            <meta property="article:tag" content="@tag" />
+        }
+    }
     
     <!-- Theme Script to prevent FOUC (Flash of Unstyled Content) -->
     <script>
@@ -28,7 +55,7 @@
             <div class="container max-w-6xl">
                 <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" asp-controller="Posts" asp-action="Index">
                     <img src="~/images/logo.png" alt="Techcrafts Logo" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-subtle);" />
-                    Techcrafts
+                     Oluleke OKEWALE
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
                     <span class="navbar-toggler-icon"></span>

@@ -1,0 +1,99 @@
+@{
+    ViewData["Title"] = "First-Launch Setup";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Techcrafts Blogging</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <style>
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .setup-card {
+            background-color: #1e1e1e;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            max-width: 600px;
+            width: 100%;
+            border: 1px solid #333;
+        }
+        .form-control {
+            background-color: #2d2d2d;
+            border: 1px solid #444;
+            color: #fff;
+        }
+        .form-control:focus {
+            background-color: #333;
+            color: #fff;
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+            border: none;
+            padding: 10px 20px;
+            font-weight: 600;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #0b5ed7, #0a58ca);
+        }
+    </style>
+</head>
+<body>
+    <div class="setup-card">
+        <h2 class="mb-4 text-center">Techcrafts Blogging Setup</h2>
+        <p class="text-muted text-center mb-4">
+            Welcome! It looks like this is your first time launching the application or the database connection is currently unavailable. Please provide your database connection string below to configure and initialize the database.
+        </p>
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger">
+                @Html.ValidationSummary(false, "", new { @class = "text-danger m-0" })
+            </div>
+        }
+
+        <form method="post" action="/Setup/Index">
+            <h5 class="fw-bold mb-3 border-bottom pb-2">1. Database</h5>
+            <div class="mb-4">
+                <label for="connectionString" class="form-label fw-medium">Connection String</label>
+                <input type="text" class="form-control" id="connectionString" name="connectionString" placeholder="Server=...;Database=...;" required />
+                <div class="form-text text-muted">Example: <code>Server=(localdb)\mssqllocaldb;Database=BloggingDb;Trusted_Connection=True;</code></div>
+            </div>
+
+            <h5 class="fw-bold mb-3 border-bottom pb-2 mt-4">2. Admin Account</h5>
+            <div class="mb-3">
+                <label for="adminEmail" class="form-label fw-medium">Admin Email</label>
+                <input type="email" class="form-control" id="adminEmail" name="adminEmail" placeholder="admin@example.com" required />
+            </div>
+            <div class="mb-4">
+                <label for="adminPassword" class="form-label fw-medium">Admin Password</label>
+                <input type="password" class="form-control" id="adminPassword" name="adminPassword" required minlength="6" />
+                <div class="form-text text-muted">Must be at least 6 characters and contain a number.</div>
+            </div>
+
+            <h5 class="fw-bold mb-3 border-bottom pb-2 mt-4">3. Monitoring</h5>
+            <div class="form-check form-switch mb-5">
+                <input class="form-check-input" type="checkbox" id="enableTelemetry" name="enableTelemetry" value="true" checked>
+                <label class="form-check-label" for="enableTelemetry">Enable Database Telemetry Exporter</label>
+                <div class="form-text text-muted">Captures traces and logs them to the database for the Admin Dashboard.</div>
+            </div>
+
+            <div class="d-grid">
+                <button type="submit" class="btn btn-primary btn-lg">Complete Setup</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

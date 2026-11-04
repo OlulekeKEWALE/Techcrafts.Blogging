@@ -6,7 +6,7 @@ namespace Techcrafts.Blogging.Infrastructure.Persistence;
 
 public static class DbSeeder
 {
-    public static async Task SeedAsync(BloggingDbContext context)
+    public static async Task SeedAsync(BloggingDbContext context, string adminEmail = "admin@techcrafts.com")
     {
         if (await context.Posts.AnyAsync())
         {
@@ -16,7 +16,7 @@ public static class DbSeeder
         var author = new Author
         {
             DisplayName = "Okewale Akintunde Oluleke",
-            Email = "admin@techcrafts.com",
+            Email = adminEmail,
             Bio = "Software Engineer, Software Architect, and Engineering Leader",
             AvatarUrl = "/images/logo.png"
         };

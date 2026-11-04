@@ -1,7 +1,8 @@
 using MediatR;
+using Techcrafts.Blogging.Application.Common.Utils;
 using Techcrafts.Blogging.Application.Interfaces;
 using Techcrafts.Blogging.Domain.Entities;
-using System.Text.RegularExpressions;
+using Techcrafts.Blogging.Domain.Enums;
 
 namespace Techcrafts.Blogging.Application.Features.Posts.Commands;
 
@@ -16,24 +17,25 @@ public class CreatePostCommandHandler : IRequestHandler<CreatePostCommand, Guid>
 
     public async Task<Guid> Handle(CreatePostCommand request, CancellationToken cancellationToken)
     {
+        var slug = await SlugHelper.GenerateUniqueSlugAsync(_context, request.Title, null, cancellationToken);
+
         var post = new Post
         {
             Title = request.Title,
-            Slug = GenerateSlug(request.Title),
+            Slug = slug,
             Summary = request.Summary,
             Content = request.Content,
             FeaturedImageUrl = request.FeaturedImageUrl,
             AuthorId = request.AuthorId,
-            ReadingTimeMinutes = CalculateReadingTime(request.Content)
+            ReadingTimeMinutes = SlugHelper.CalculateReadingTime(request.Content),
+            Status = request.Publish ? PostStatus.Published : PostStatus.Draft,
+            PublishedDate = request.Publish ? DateTimeOffset.UtcNow : null
         };
 
-        // Attach category if provided
-        // (In a real app, validate existence)
-        
-        // Attach tags
+        // Attach tags if provided
         if (request.TagIds != null && request.TagIds.Any())
         {
-            foreach (var tagId in request.TagIds)
+            foreach (var tagId in request.TagIds.Distinct())
             {
                 post.PostTags.Add(new PostTag { TagId = tagId });
             }
@@ -43,26 +45,5 @@ public class CreatePostCommandHandler : IRequestHandler<CreatePostCommand, Guid>
         await _context.SaveChangesAsync(cancellationToken);
 
         return post.Id;
-    }
-
-    private string GenerateSlug(string phrase)
-    {
-        string str = phrase.ToLowerInvariant();
-        // Remove invalid chars
-        str = Regex.Replace(str, @"[^a-z0-9\s-]", "");
-        // Convert multiple spaces into one space
-        str = Regex.Replace(str, @"\s+", " ").Trim();
-        // Cut and trim
-        str = str.Substring(0, str.Length <= 45 ? str.Length : 45).Trim();
-        // Hyphens
-        str = Regex.Replace(str, @"\s", "-");
-        return str;
-    }
-
-    private int CalculateReadingTime(string text)
-    {
-        if (string.IsNullOrWhiteSpace(text)) return 1;
-        var wordCount = text.Split(new char[] { ' ', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).Length;
-        return (int)Math.Ceiling(wordCount / 200.0);
     }
 }

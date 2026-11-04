@@ -11,6 +11,9 @@ public class PostConfiguration : IEntityTypeConfiguration<Post>
         builder.HasIndex(p => p.Slug).IsUnique();
         builder.HasIndex(p => new { p.Status, p.PublishedDate }).IsDescending(false, true);
 
+        builder.Property(p => p.RowVersion)
+               .IsRowVersion();
+
         builder.HasMany(p => p.Comments)
                .WithOne(c => c.Post)
                .HasForeignKey(c => c.PostId)

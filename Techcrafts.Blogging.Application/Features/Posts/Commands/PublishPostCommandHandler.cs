@@ -20,11 +20,11 @@ public class PublishPostCommandHandler : IRequestHandler<PublishPostCommand, boo
         if (post == null) return false;
 
         post.Status = PostStatus.Published;
-        post.PublishedDate = DateTimeOffset.UtcNow;
+        // Preserve original publication date if already set (idempotent publish)
+        post.PublishedDate ??= DateTimeOffset.UtcNow;
         
         await _context.SaveChangesAsync(cancellationToken);
         
-        // Triggers in-memory PostPublishedNotification would go here using _mediator.Publish
         return true;
     }
 }

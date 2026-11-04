@@ -1,0 +1,139 @@
+@model Techcrafts.Blogging.Web.Models.ConcurrencyConflictViewModel
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Concurrency Conflict Detected";
+}
+
+<div class="alert alert-warning border-0 shadow-sm rounded-4 p-4 mb-4">
+    <div class="d-flex align-items-center gap-3">
+        <i class="bi bi-exclamation-octagon-fill fs-2 text-warning"></i>
+        <div>
+            <h4 class="alert-heading fw-bold m-0">Conflict: This post was modified by another user or session</h4>
+            <p class="m-0 text-muted mt-1">
+                Another administrator saved changes to this post while you were editing it. Your changes have been preserved below so you can compare and resolve differences without losing data.
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Your Unsaved Version -->
+    <div class="col-lg-6">
+        <div class="card p-4 border-0 shadow-sm rounded-4 bg-surface h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3 border-bottom border-subtle pb-2">
+                <h5 class="fw-bold m-0 text-primary"><i class="bi bi-person-fill me-1"></i> Your Unsaved Version</h5>
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle">Unsaved</span>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label text-muted small fw-bold text-uppercase">Title</label>
+                <div class="p-2 rounded bg-dark border font-monospace small">@Model.SubmittedTitle</div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label text-muted small fw-bold text-uppercase">Summary</label>
+                <div class="p-2 rounded bg-dark border font-monospace small" style="white-space: pre-wrap;">@Model.SubmittedSummary</div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label text-muted small fw-bold text-uppercase">Content (Markdown)</label>
+                <pre class="p-2 rounded bg-dark border font-monospace small" style="max-height: 250px; overflow-y: auto;">@Model.SubmittedContent</pre>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label text-muted small fw-bold text-uppercase">Featured Image</label>
+                <div class="p-2 rounded bg-dark border font-monospace small">@(Model.SubmittedFeaturedImageUrl ?? "None")</div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label text-muted small fw-bold text-uppercase">Featured Post</label>
+                <div>@(Model.SubmittedIsFeatured ? "Yes" : "No")</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Current Database Version -->
+    <div class="col-lg-6">
+        <div class="card p-4 border-0 shadow-sm rounded-4 bg-surface h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3 border-bottom border-subtle pb-2">
+                <h5 class="fw-bold m-0 text-success"><i class="bi bi-database-check me-1"></i> Current Persisted Version</h5>
+                <span class="badge bg-success-subtle text-success border border-success-subtle">Saved in Database</span>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label text-muted small fw-bold text-uppercase">Title</label>
+                <div class="p-2 rounded bg-dark border font-monospace small">@Model.CurrentTitle</div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label text-muted small fw-bold text-uppercase">Summary</label>
+                <div class="p-2 rounded bg-dark border font-monospace small" style="white-space: pre-wrap;">@Model.CurrentSummary</div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label text-muted small fw-bold text-uppercase">Content (Markdown)</label>
+                <pre class="p-2 rounded bg-dark border font-monospace small" style="max-height: 250px; overflow-y: auto;">@Model.CurrentContent</pre>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label text-muted small fw-bold text-uppercase">Featured Image</label>
+                <div class="p-2 rounded bg-dark border font-monospace small">@(Model.CurrentFeaturedImageUrl ?? "None")</div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label text-muted small fw-bold text-uppercase">Current Tags</label>
+                <div>
+                    @if (Model.CurrentTagNames != null && Model.CurrentTagNames.Any())
+                    {
+                        @foreach (var t in Model.CurrentTagNames)
+                        {
+                            <span class="badge bg-dark border text-muted me-1">@t</span>
+                        }
+                    }
+                    else
+                    {
+                        <span class="text-muted small">None</span>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Resolution Actions -->
+<div class="card p-4 border-0 shadow-sm rounded-4 bg-surface mt-4">
+    <h5 class="fw-bold mb-3"><i class="bi bi-wrench-adjustable me-2 text-muted"></i> Choose Resolution</h5>
+    <div class="d-flex flex-wrap gap-3">
+        <!-- Overwrite using freshly acknowledged RowVersion -->
+        <form method="post" action="/admin/posts/@Model.PostId/edit" onsubmit="return confirm('Are you sure you want to overwrite the current database version with your changes?');">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="title" value="@Model.SubmittedTitle" />
+            <input type="hidden" name="summary" value="@Model.SubmittedSummary" />
+            <input type="hidden" name="content" value="@Model.SubmittedContent" />
+            <input type="hidden" name="featuredImageUrl" value="@Model.SubmittedFeaturedImageUrl" />
+            <input type="hidden" name="isFeatured" value="@(Model.SubmittedIsFeatured ? "true" : "false")" />
+            <input type="hidden" name="action" value="save" />
+            <input type="hidden" name="rowVersion" value="@Model.NewRowVersion" />
+            @if (Model.SubmittedTagIds != null)
+            {
+                @foreach (var tagId in Model.SubmittedTagIds)
+                {
+                    <input type="hidden" name="tagIds" value="@tagId" />
+                }
+            }
+            <button type="submit" class="btn btn-warning">
+                <i class="bi bi-arrow-repeat me-1"></i> Overwrite With My Version
+            </button>
+        </form>
+
+        <!-- Reload latest version into editor -->
+        <a href="/admin/posts/@Model.PostId/edit" class="btn btn-secondary">
+            <i class="bi bi-arrow-clockwise me-1"></i> Reload Latest Version
+        </a>
+
+        <!-- Cancel and return to listing -->
+        <a href="/admin/posts" class="btn btn-outline-secondary">
+            Cancel & Return to Posts
+        </a>
+    </div>
+</div>

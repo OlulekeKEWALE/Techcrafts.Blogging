@@ -1,63 +1,127 @@
-@using Techcrafts.Blogging.Application.Features.Posts.Commands
-@model CreatePostCommand
-@{ Layout = "_AdminLayout"; ViewData["Title"] = "Draft New Post"; }
+@using Techcrafts.Blogging.Domain.Entities
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Draft New Post";
+    var allTags = (List<Tag>?)ViewBag.AllTags ?? new List<Tag>();
+}
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
 
-<div class="row">
-    <div class="col-lg-8">
-        <div class="card p-4 border-0">
-            <form method="post" action="/admin/create">
-                @Html.AntiForgeryToken()
-                <input type="hidden" name="AuthorId" value="@Guid.NewGuid()" />
-                
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <a href="/admin/posts" class="text-muted text-decoration-none small d-inline-flex align-items-center gap-1 mb-2">
+            <i class="bi bi-arrow-left"></i> Back to Blog Posts
+        </a>
+        <h2 class="fw-bold m-0" style="letter-spacing: -0.02em;">Draft New Post</h2>
+    </div>
+</div>
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger border-0 shadow-sm mb-4">
+        <div class="fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill me-2"></i> Please correct the following errors:</div>
+        <div asp-validation-summary="All" class="text-white small m-0"></div>
+    </div>
+}
+
+<form method="post" action="/admin/create">
+    @Html.AntiForgeryToken()
+    <div class="row g-4">
+        <!-- Editor Left Column -->
+        <div class="col-lg-8">
+            <div class="card p-4 border-0 shadow-sm rounded-4 bg-surface mb-4">
                 <div class="mb-4">
                     <label class="form-label text-muted small fw-bold text-uppercase">Title</label>
-                    <input type="text" name="Title" class="form-control form-control-lg fw-bold" placeholder="Give it a catchy title..." required />
+                    <input type="text" name="title" class="form-control form-control-lg fw-bold" placeholder="Give it a catchy title..." required />
                 </div>
                 
                 <div class="mb-4">
                     <label class="form-label text-muted small fw-bold text-uppercase">Summary</label>
-                    <textarea name="Summary" class="form-control bg-surface" rows="2" placeholder="A short description for the meta tags and feed..." required></textarea>
+                    <textarea name="summary" class="form-control" rows="3" placeholder="A short description for meta tags and feed..." required></textarea>
                 </div>
 
                 <div class="mb-4">
                     <label class="form-label text-muted small fw-bold text-uppercase">Featured Image URL (Optional)</label>
-                    <input type="text" name="FeaturedImageUrl" class="form-control bg-surface" placeholder="e.g. /images/header1.jpg or https://..." />
+                    <input type="text" name="featuredImageUrl" class="form-control" placeholder="e.g. /images/header1.jpg or https://..." />
                 </div>
                 
                 <div class="mb-4">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <label class="form-label text-muted small fw-bold text-uppercase mb-0">Content (Markdown)</label>
-                        <button type="button" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1">
-                            <i class="bi bi-magic"></i> Generate with AI
-                        </button>
-                    </div>
-                    <textarea id="markdown-editor" name="Content" class="form-control font-monospace" style="background-color: var(--code-bg); color: var(--code-text);" rows="14" placeholder="Write your content here... supports Markdown and code formatting!" required></textarea>
+                    <label class="form-label text-muted small fw-bold text-uppercase mb-2">Content (Markdown)</label>
+                    <textarea id="markdown-editor" name="content" class="form-control font-monospace" rows="16" placeholder="Write your content here... Markdown supported!"></textarea>
                 </div>
+            </div>
+        </div>
+
+        <!-- Meta / Publishing Sidebar Right Column -->
+        <div class="col-lg-4">
+            <div class="card p-4 border-0 shadow-sm rounded-4 bg-surface mb-4">
+                <h6 class="fw-bold mb-3"><i class="bi bi-send me-2 text-muted"></i> Editorial Actions</h6>
                 
-                <div class="d-flex justify-content-end gap-3 mt-4 pt-3 border-top border-subtle">
-                    <a href="/admin" class="btn btn-secondary">Cancel</a>
-                    <button type="submit" class="btn btn-primary">Save & Publish</button>
+                <div class="d-grid gap-2">
+                    <button type="submit" name="action" value="draft" class="btn btn-primary">
+                        <i class="bi bi-file-earmark-check me-1"></i> Save Draft
+                    </button>
+                    
+                    <button type="submit" name="action" value="publish" class="btn btn-success">
+                        <i class="bi bi-cloud-upload me-1"></i> Save & Publish Immediately
+                    </button>
+
+                    <a href="/admin/posts" class="btn btn-secondary">
+                        Cancel
+                    </a>
                 </div>
-            </form>
+            </div>
+
+            <div class="card p-4 border-0 shadow-sm rounded-4 bg-surface mb-4">
+                <h6 class="fw-bold mb-3"><i class="bi bi-sliders me-2 text-muted"></i> Post Metadata</h6>
+
+                <div class="mb-3">
+                    <label class="form-label text-muted small fw-bold text-uppercase">Author Identity</label>
+                    <div class="form-control text-muted">@User.Identity?.Name (Authenticated Admin)</div>
+                    <div class="form-text small">Author is securely resolved on the server.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-muted small fw-bold text-uppercase mb-2">Tags</label>
+                    @if (allTags.Any())
+                    {
+                        <div class="d-flex flex-wrap gap-2">
+                            @foreach (var tag in allTags)
+                            {
+                                <div class="form-check form-check-inline m-0">
+                                    <input class="form-check-input" type="checkbox" name="tagIds" value="@tag.Id" id="new_tag_@tag.Id" />
+                                    <label class="form-check-label small" for="new_tag_@tag.Id">@tag.Name</label>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-muted small">No tags defined yet.</div>
+                    }
+                </div>
+            </div>
         </div>
     </div>
-    <div class="col-lg-4">
-        <div class="card p-4 border-0 mb-4" style="background-color: var(--bg-surface);">
-            <h6 class="fw-bold mb-3"><i class="bi bi-gear-fill me-2 text-muted"></i> Publish Settings</h6>
-            <div class="form-check mb-2">
-                <input class="form-check-input" type="checkbox" id="flexCheckDefault" checked>
-                <label class="form-check-label text-muted" for="flexCheckDefault">
-                    Publish immediately
-                </label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="flexCheckChecked">
-                <label class="form-check-label text-muted" for="flexCheckChecked">
-                    Send to Newsletter subscribers
-                </label>
-            </div>
-        </div>
-    </div>
-</div>
+</form>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const editorEl = document.getElementById("markdown-editor");
+            if (editorEl) {
+                const easyMDE = new EasyMDE({
+                    element: editorEl,
+                    spellChecker: false,
+                    autosave: { enabled: false },
+                    status: ["lines", "words", "cursor"]
+                });
+                editorEl.easyMDE = easyMDE;
+                easyMDE.codemirror.on("change", function () {
+                    editorEl.value = easyMDE.value();
+                });
+            }
+        });
+    </script>
+}
